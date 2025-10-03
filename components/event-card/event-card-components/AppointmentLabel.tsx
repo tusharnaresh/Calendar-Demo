@@ -17,7 +17,7 @@ export const AppointmentLabel: React.FC<AppointmentLabelProps> = ({
   size,
   cardState,
 }) => {
-  if (!label) return null;
+  if (!label || label === 'No label') return null;
 
   const getPadding = () => {
     switch (size) {
