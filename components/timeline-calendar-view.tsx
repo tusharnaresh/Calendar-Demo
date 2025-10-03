@@ -3,8 +3,8 @@ import { Event, mockEvents } from '@/data/mockEvents';
 import { getEventColors } from '@/utils/eventColorSchemes';
 import { formatTime } from '@/utils/timeFormatters';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useCallback, useMemo, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useMemo, useState, useRef } from 'react';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Animated } from 'react-native';
 import { CalendarProvider, Timeline, TimelineList } from 'react-native-calendars';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -25,6 +25,10 @@ export const TimelineCalendarView: React.FC = () => {
   );
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [numberOfDays, setNumberOfDays] = useState<1 | 3>(1);
+  // animated value for horizontal slide (-280 is off-screen to the left)
+  const slideAnim = useRef(new Animated.Value(-280)).current;
 
   const getEventColor = useCallback((event: Event): string => {
     return getEventColors(event).border;
@@ -78,6 +82,37 @@ export const TimelineCalendarView: React.FC = () => {
     setSelectedEvent(null);
   }, []);
 
+  const toggleSidebar = useCallback(() => {
+    if (sidebarVisible) {
+      // slide out then hide
+      Animated.timing(slideAnim, {
+        toValue: -280,
+        duration: 250,
+        useNativeDriver: true,
+      }).start(() => setSidebarVisible(false));
+    } else {
+      setSidebarVisible(true);
+      // small delay to ensure modal rendered
+      requestAnimationFrame(() => {
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }).start();
+      });
+    }
+  }, [sidebarVisible, slideAnim]);
+
+  const handleViewChange = useCallback((days: 1 | 3) => {
+    setNumberOfDays(days);
+    // animate sidebar closing
+    Animated.timing(slideAnim, {
+      toValue: -280,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => setSidebarVisible(false));
+  }, [slideAnim]);
+
   const onDateChanged = useCallback((date: string) => {
     setCurrentDate(date);
   }, []);
@@ -86,7 +121,7 @@ export const TimelineCalendarView: React.FC = () => {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton}>
+        <TouchableOpacity style={styles.headerButton} onPress={toggleSidebar}>
           <Ionicons name="menu" size={24} color="#111827" />
         </TouchableOpacity>
         
@@ -108,6 +143,7 @@ export const TimelineCalendarView: React.FC = () => {
         date={currentDate}
         onDateChanged={onDateChanged}
         showTodayButton
+        numberOfDays={numberOfDays}
         theme={{
           todayButtonTextColor: '#3B82F6',
         }}
@@ -137,6 +173,89 @@ export const TimelineCalendarView: React.FC = () => {
       <TouchableOpacity style={styles.fab}>
         <Ionicons name="add" size={28} color="#FFF" />
       </TouchableOpacity>
+
+      {/* Sidebar (animated horizontally) */}
+      <Modal
+        visible={sidebarVisible}
+        animationType="none"
+        transparent
+        onRequestClose={toggleSidebar}
+      >
+        <TouchableOpacity
+          style={styles.sidebarOverlay}
+          activeOpacity={1}
+          onPress={toggleSidebar}
+        >
+          {/* Animated sliding panel */}
+          <Animated.View
+            style={[
+              styles.sidebar,
+              { transform: [{ translateX: slideAnim }] },
+            ]}
+          >
+            <View style={styles.sidebarHeader}>
+              <Text style={styles.sidebarTitle}>Calendar View</Text>
+              <TouchableOpacity onPress={toggleSidebar} style={styles.sidebarCloseButton}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.sidebarContent}>
+              <Text style={styles.sidebarSectionTitle}>View Options</Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.sidebarOption,
+                  numberOfDays === 1 && styles.sidebarOptionActive,
+                ]}
+                onPress={() => handleViewChange(1)}
+              >
+                <Ionicons
+                  name="calendar-outline"
+                  size={20}
+                  color={numberOfDays === 1 ? '#3B82F6' : '#6B7280'}
+                />
+                <Text
+                  style={[
+                    styles.sidebarOptionText,
+                    numberOfDays === 1 && styles.sidebarOptionTextActive,
+                  ]}
+                >
+                  1 Day
+                </Text>
+                {numberOfDays === 1 && (
+                  <Ionicons name="checkmark" size={20} color="#3B82F6" style={styles.checkmark} />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.sidebarOption,
+                  numberOfDays === 3 && styles.sidebarOptionActive,
+                ]}
+                onPress={() => handleViewChange(3)}
+              >
+                <Ionicons
+                  name="calendar"
+                  size={20}
+                  color={numberOfDays === 3 ? '#3B82F6' : '#6B7280'}
+                />
+                <Text
+                  style={[
+                    styles.sidebarOptionText,
+                    numberOfDays === 3 && styles.sidebarOptionTextActive,
+                  ]}
+                >
+                  3 Days
+                </Text>
+                {numberOfDays === 3 && (
+                  <Ionicons name="checkmark" size={20} color="#3B82F6" style={styles.checkmark} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Event Details Modal */}
       <Modal
@@ -442,5 +561,80 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#111827',
     marginBottom: 4,
+  },
+  // Sidebar Styles
+  sidebarOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-start',
+  },
+  sidebar: {
+    width: 280,
+    height: '100%',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  sidebarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  sidebarTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  sidebarCloseButton: {
+    padding: 4,
+  },
+  sidebarContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+  },
+  sidebarSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  sidebarOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#F9FAFB',
+  },
+  sidebarOptionActive: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  sidebarOptionText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#374151',
+    marginLeft: 12,
+    flex: 1,
+  },
+  sidebarOptionTextActive: {
+    color: '#3B82F6',
+    fontWeight: '600',
+  },
+  checkmark: {
+    marginLeft: 'auto',
   },
 });
