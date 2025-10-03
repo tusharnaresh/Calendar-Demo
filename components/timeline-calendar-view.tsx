@@ -161,6 +161,9 @@ export const TimelineCalendarView: React.FC = () => {
                 overlapEventsSpacing={8}
                 rightEdgeSpacing={24}
                 renderEvent={renderEvent}
+                scrollToFirst={true}
+                unavailableHours={[{start: 0, end: 11}, {start: 22, end: 24}]}
+                unavailableHoursColor='#F2F2F2'
               />
             );
           }}
