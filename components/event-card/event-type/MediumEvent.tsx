@@ -26,13 +26,11 @@ export const MediumEvent: React.FC<MediumEventProps> = ({ event, onPress }) => {
     >
       <SideBar color={colors.sideBar} size="medium" />
       <View style={styles.content}>
+        {/* Header: Title + Video Icon */}
         <View style={styles.header}>
-          <TimeStamp 
-            startTime={event.startTime}
-            endTime={event.endTime}
-            size="medium"
-            textColor={colors.text}
-          />
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
+            {event.title}
+          </Text>
           {hasVideoLink && (
             <VideoIcon 
               externalSource={event.externalSource}
@@ -41,9 +39,15 @@ export const MediumEvent: React.FC<MediumEventProps> = ({ event, onPress }) => {
             />
           )}
         </View>
-        <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
-          {event.title}
-        </Text>
+        
+        {/* Subtitle: Timestamp */}
+        <TimeStamp 
+          startTime={event.startTime}
+          endTime={event.endTime}
+          size="medium"
+        />
+        
+        {/* Bottom Right: Label, External Icon */}
         <View style={styles.footer}>
           <AppointmentLabel 
             label={event.label}
@@ -51,6 +55,7 @@ export const MediumEvent: React.FC<MediumEventProps> = ({ event, onPress }) => {
             size="medium"
             cardState={cardState}
           />
+          
           <ExternalSourceBadge 
             isExternal={event.isExternal}
             externalSource={event.externalSource}
@@ -85,14 +90,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 3,
   },
   title: {
     fontSize: 13,
     fontWeight: '600',
-    marginBottom: 6,
     lineHeight: 16,
+    flex: 1,
+    marginRight: 4,
   },
   footer: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,

@@ -7,14 +7,14 @@ interface TimeStampProps {
   startTime: number;
   endTime: number;
   size: CardSize;
-  textColor: string;
+  textColor?: string;
 }
 
-export const TimeStamp: React.FC<TimeStampProps> = ({ startTime, endTime, size, textColor }) => {
+export const TimeStamp: React.FC<TimeStampProps> = ({ startTime, endTime, size, textColor="#676767" }) => {
   const getText = () => {
     if (size === 'tiny') return null; // No time shown for tiny
     if (size === 'small') {
-      return `${formatTimeShort(startTime)}-${formatTimeShort(endTime)}`;
+      return `${formatTimeShort(startTime)} - ${formatTimeShort(endTime)}`;
     }
     return `${formatTime(startTime)} - ${formatTime(endTime)}`;
   };
@@ -61,6 +61,7 @@ export const TimeStamp: React.FC<TimeStampProps> = ({ startTime, endTime, size, 
           marginBottom: getMarginBottom(),
         }
       ]}
+        numberOfLines={1}
     >
       {text}
     </Text>

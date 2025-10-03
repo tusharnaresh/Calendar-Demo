@@ -121,7 +121,7 @@ export const mockEvents: Event[] = [
     endTime: new Date('2025-10-03T11:42:00Z').getTime(),
     startDateTime: '2025-10-03T11:00:00Z',
     endDateTime: '2025-10-03T11:42:00Z',
-    type: 'APPOINTMENT',
+    type: 'EVENT',
     service: ['ef58b8dc-e458-41af-a699-5c497f3dc7eb'],
     location: {
       videoType: [

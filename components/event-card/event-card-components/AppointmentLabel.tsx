@@ -59,15 +59,7 @@ export const AppointmentLabel: React.FC<AppointmentLabelProps> = ({
   };
 
   const getBackgroundColor = () => {
-    if (cardState === 'active') {
-      switch (size) {
-        case 'large': return 'rgba(255, 255, 255, 0.2)';
-        case 'medium': return 'rgba(255, 255, 255, 0.2)';
-        case 'small': return 'rgba(255, 255, 255, 0.3)';
-        default: return 'rgba(255, 255, 255, 0.2)';
-      }
-    }
-    return 'rgba(0, 0, 0, 0.05)';
+    return 'rgba(255, 255, 255, 0.7)';
   };
 
   const padding = getPadding();
@@ -93,6 +85,7 @@ export const AppointmentLabel: React.FC<AppointmentLabelProps> = ({
             letterSpacing: getLetterSpacing(),
           }
         ]}
+        numberOfLines={1}
       >
         {label}
       </Text>

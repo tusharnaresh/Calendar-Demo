@@ -27,15 +27,11 @@ export const LargeEvent: React.FC<LargeEventProps> = ({ event, onPress }) => {
     >
       <SideBar color={colors.sideBar} size="large" />
       <View style={styles.content}>
+        {/* Header: Title + Video Icon */}
         <View style={styles.header}>
-          <View style={styles.timeContainer}>
-            <TimeStamp 
-              startTime={event.startTime}
-              endTime={event.endTime}
-              size="large"
-              textColor={colors.text}
-            />
-          </View>
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
+            {event.title}
+          </Text>
           {hasVideoLink && (
             <VideoIcon 
               externalSource={event.externalSource}
@@ -45,10 +41,14 @@ export const LargeEvent: React.FC<LargeEventProps> = ({ event, onPress }) => {
           )}
         </View>
 
-        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
-          {event.title}
-        </Text>
+        {/* Subtitle: Timestamp */}
+        <TimeStamp 
+          startTime={event.startTime}
+          endTime={event.endTime}
+          size="large"
+        />
 
+        {/* Bottom Right: Service Badge, Label, External Icon */}
         <View style={styles.footer}>
           <ServiceTypeBadge 
             type={event.type}
@@ -64,7 +64,7 @@ export const LargeEvent: React.FC<LargeEventProps> = ({ event, onPress }) => {
             size="large"
             cardState={cardState}
           />
-
+          
           <ExternalSourceBadge 
             isExternal={event.isExternal}
             externalSource={event.externalSource}
@@ -99,20 +99,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  timeContainer: {
-    flex: 1,
+    marginBottom: 4,
   },
   title: {
     fontSize: 15,
     fontWeight: '600',
-    marginBottom: 10,
     lineHeight: 20,
+    flex: 1,
+    marginRight: 4,
   },
   footer: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
     gap: 6,
   },
 });

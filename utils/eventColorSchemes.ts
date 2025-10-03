@@ -110,7 +110,7 @@ export const getEventColors = (event: Event) => {
     return {
       bg: colorScheme.dark,
       sideBar: colorScheme.dark,
-      text: "#FFFFFF", // White text on active/dark background
+      text: "#FFFFFF", 
       border: colorScheme.dark,
     };
   } else {
