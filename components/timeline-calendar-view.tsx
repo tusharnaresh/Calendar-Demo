@@ -1,9 +1,12 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { TimelineList, CalendarProvider, Timeline } from 'react-native-calendars';
-import { Ionicons } from '@expo/vector-icons';
+import { EventCard } from '@/components/event-card';
 import { Event, mockEvents } from '@/data/mockEvents';
+import { getEventColors } from '@/utils/eventColorSchemes';
+import { formatTime } from '@/utils/timeFormatters';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CalendarProvider, Timeline, TimelineList } from 'react-native-calendars';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Timeline event format required by react-native-calendars
 interface TimelineEvent {
@@ -23,31 +26,9 @@ export const TimelineCalendarView: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const getEventColor = (event: Event): string => {
-    // Services - Green
-    if (event.type === 'SESSION' && event.service && event.service.length > 0) {
-      return '#10B981'; // emerald-500
-    }
-    // Appointments (Classes) - Purple
-    if (event.type === 'APPOINTMENT' && event.service && event.service.length > 0) {
-      return '#8B5CF6'; // violet-500
-    }
-    // Regular Events - Blue
-    return '#3B82F6'; // blue-500
-  };
-
-  const getEventBackgroundColor = (event: Event): string => {
-    // Services - Light Green
-    if (event.type === 'SESSION' && event.service && event.service.length > 0) {
-      return '#D1FAE5'; // emerald-100
-    }
-    // Appointments - Light Purple
-    if (event.type === 'APPOINTMENT' && event.service && event.service.length > 0) {
-      return '#EDE9FE'; // violet-100
-    }
-    // Regular Events - Light Blue
-    return '#DBEAFE'; // blue-100
-  };
+  const getEventColor = useCallback((event: Event): string => {
+    return getEventColors(event).border;
+  }, []);
 
   // Convert our events to Timeline format grouped by date
   const timelineEvents = useMemo(() => {
@@ -62,7 +43,7 @@ export const TimelineCalendarView: React.FC = () => {
         end: event.endDateTime,
         title: event.title,
         summary: event.location?.videoType?.[0]?.type || '',
-        color: getEventColor(event),
+        color: "#fff",
         originalEvent: event,
       };
 
@@ -73,17 +54,7 @@ export const TimelineCalendarView: React.FC = () => {
     });
 
     return eventsByDate;
-  }, []);
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12;
-    const formattedMinutes = minutes.toString().padStart(2, '0');
-    return `${formattedHours}:${formattedMinutes}${ampm}`;
-  };
+  }, [getEventColor]);
 
   const renderEvent = useCallback((event: any) => {
     const timelineEvent = event as TimelineEvent;
@@ -91,51 +62,15 @@ export const TimelineCalendarView: React.FC = () => {
     
     if (!originalEvent) return null;
 
-    const hasVideoLink = originalEvent.location?.videoType && originalEvent.location.videoType.length > 0;
-    const videoIcon = originalEvent.externalSource === 'microsoft' ? 'logo-microsoft' : 'videocam';
-
     return (
-      <View
-        style={[
-          styles.eventBlock,
-          { 
-            backgroundColor: getEventBackgroundColor(originalEvent),
-            borderLeftColor: getEventColor(originalEvent),
-          }
-        ]}
-      >
-        <View style={styles.eventHeader}>
-          <Text style={styles.eventTime}>
-            {formatTime(timelineEvent.start)} - {formatTime(timelineEvent.end)}
-          </Text>
-          {hasVideoLink && (
-            <Ionicons name={videoIcon as any} size={14} color="#6B7280" style={styles.videoIcon} />
-          )}
-        </View>
-        
-        <Text style={styles.eventTitle} numberOfLines={2}>
-          {timelineEvent.title}
-        </Text>
-
-        {originalEvent.isExternal && (
-          <View style={styles.externalBadge}>
-            <Ionicons 
-              name={originalEvent.externalSource === 'google' ? 'logo-google' : 'logo-microsoft'} 
-              size={10} 
-              color="#6B7280" 
-            />
-          </View>
-        )}
-      </View>
+      <EventCard 
+        event={originalEvent}
+        onPress={() => {
+          setSelectedEvent(originalEvent);
+          setModalVisible(true);
+        }}
+      />
     );
-  }, []);
-
-  const onEventPress = useCallback((event: any) => {
-    const timelineEvent = event as TimelineEvent;
-    if (timelineEvent.originalEvent) {
-      setSelectedEvent(timelineEvent.originalEvent);
-      setModalVisible(true);
-    }
   }, []);
 
   const closeModal = useCallback(() => {
@@ -190,7 +125,6 @@ export const TimelineCalendarView: React.FC = () => {
                 overlapEventsSpacing={8}
                 rightEdgeSpacing={24}
                 renderEvent={renderEvent}
-                onEventPress={onEventPress}
               />
             );
           }}
@@ -256,10 +190,11 @@ export const TimelineCalendarView: React.FC = () => {
                   <View style={styles.detailTextContainer}>
                     <Text style={styles.detailLabel}>Type</Text>
                     <View style={styles.typeContainer}>
-                      <View style={[styles.typeBadge, { backgroundColor: getEventBackgroundColor(selectedEvent) }]}>
-                        <Text style={[styles.typeText, { color: getEventColor(selectedEvent) }]}>
-                          {selectedEvent.type === 'EVENT' ? 'Event' :
-                           selectedEvent.type === 'SESSION' ? 'Service' : 'Appointment'}
+                      <View style={[styles.typeBadge, { backgroundColor: getEventColors(selectedEvent).bg }]}>
+                        <Text style={[styles.typeText, { color: getEventColors(selectedEvent).text }]}>
+                          {selectedEvent.type === 'EVENT' && 'Event'}
+                          {selectedEvent.type === 'SESSION' && 'Service'}
+                          {selectedEvent.type === 'APPOINTMENT' && 'Appointment'}
                         </Text>
                       </View>
                     </View>
@@ -323,8 +258,8 @@ export const TimelineCalendarView: React.FC = () => {
                     <View style={styles.detailTextContainer}>
                       <Text style={styles.detailLabel}>Services</Text>
                       <View style={styles.servicesContainer}>
-                        {selectedEvent.service.map((service, index) => (
-                          <Text key={index} style={styles.serviceText}>• {service}</Text>
+                        {selectedEvent.service.map((service) => (
+                          <Text key={service} style={styles.serviceText}>• {service}</Text>
                         ))}
                       </View>
                     </View>
@@ -384,41 +319,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  eventBlock: {
-    flex: 1,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    padding: 10,
-    justifyContent: 'flex-start',
-  },
-  eventHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  eventTime: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  videoIcon: {
-    marginLeft: 4,
-  },
-  eventTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-    lineHeight: 18,
-  },
-  externalBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderRadius: 10,
-    padding: 4,
   },
   fab: {
     position: 'absolute',

@@ -19,6 +19,23 @@ export interface Event {
   externalSource?: 'google' | 'microsoft';
   label?: string;
   cost?: number;
+  colorScheme?: 
+    | 'deep-blue' 
+    | 'dark-green' 
+    | 'green' 
+    | 'yellow' 
+    | 'gold'
+    | 'grey'
+    | 'orange' 
+    | 'maroon'
+    | 'red' 
+    | 'violet' 
+    | 'pink' 
+    | 'light-pink'
+    | 'internal-event'
+    | 'external-event'
+    | 'out-of-office';
+  cardState?: 'subtle' | 'medium' | 'active';
 }
 
 // Mock events for October 3-10, 2025
@@ -286,5 +303,5 @@ export const mockEvents: Event[] = [
     },
     label: 'Paid',
     cost: 50,
-  },
+  }
 ];

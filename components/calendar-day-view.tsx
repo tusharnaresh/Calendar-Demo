@@ -1,16 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import { Event, mockEvents } from '@/data/mockEvents';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useMemo, useState } from 'react';
 import {
+  ScrollView,
   StyleSheet,
   Text,
-  View,
-  ScrollView,
   TouchableOpacity,
+  View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar, DateData } from 'react-native-calendars';
-import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { EventCard } from './event-card';
-import { Event, mockEvents } from '@/data/mockEvents';
 
 export const CalendarDayView: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(
