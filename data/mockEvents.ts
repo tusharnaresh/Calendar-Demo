@@ -304,4 +304,96 @@ export const mockEvents: Event[] = [
     label: 'Paid',
     cost: 50,
   }
+  ,
+  {
+    id: '14',
+    title: 'Product Demo: New Feature',
+    startTime: new Date('2025-10-07T10:00:00Z').getTime(),
+    endTime: new Date('2025-10-07T11:00:00Z').getTime(),
+    startDateTime: '2025-10-07T10:00:00Z',
+    endDateTime: '2025-10-07T11:00:00Z',
+    type: 'EVENT',
+    location: {
+      videoType: [
+        {
+          link: 'https://meet.google.com/product-demo',
+          id: 'product-demo',
+          type: 'google-meet',
+        },
+      ],
+      type: ['videoType'],
+    },
+  },
+  {
+    id: '15',
+    title: '1:1 with Manager',
+    startTime: new Date('2025-10-08T13:00:00Z').getTime(),
+    endTime: new Date('2025-10-08T13:30:00Z').getTime(),
+    startDateTime: '2025-10-08T13:00:00Z',
+    endDateTime: '2025-10-08T13:30:00Z',
+    type: 'APPOINTMENT',
+    location: {},
+  },
+  {
+    id: '16',
+    title: 'Marketing Sync',
+    startTime: new Date('2025-10-09T09:30:00Z').getTime(),
+    endTime: new Date('2025-10-09T10:30:00Z').getTime(),
+    startDateTime: '2025-10-09T09:30:00Z',
+    endDateTime: '2025-10-09T10:30:00Z',
+    type: 'EVENT',
+    location: {
+      videoType: [
+        {
+          link: 'https://meet.google.com/marketing-sync',
+          id: 'marketing-sync',
+          type: 'google-meet',
+        },
+      ],
+      type: ['videoType'],
+    },
+    isExternal: true,
+    externalSource: 'google',
+  },
+  {
+    id: '17',
+    title: 'Sprint Retrospective',
+    startTime: new Date('2025-10-10T16:00:00Z').getTime(),
+    endTime: new Date('2025-10-10T17:00:00Z').getTime(),
+    startDateTime: '2025-10-10T16:00:00Z',
+    endDateTime: '2025-10-10T17:00:00Z',
+    type: 'SESSION',
+    service: ['retro-001'],
+    location: {},
+  },
+  {
+    id: '18',
+    title: 'Morning Yoga',
+    startTime: new Date('2025-10-11T08:00:00Z').getTime(),
+    endTime: new Date('2025-10-11T09:00:00Z').getTime(),
+    startDateTime: '2025-10-11T08:00:00Z',
+    endDateTime: '2025-10-11T09:00:00Z',
+    type: 'APPOINTMENT',
+    location: {},
+  },
+  {
+    id: '19',
+    title: 'Weekend Workshop: Design Thinking',
+    startTime: new Date('2025-10-12T18:00:00Z').getTime(),
+    endTime: new Date('2025-10-12T19:30:00Z').getTime(),
+    startDateTime: '2025-10-12T18:00:00Z',
+    endDateTime: '2025-10-12T19:30:00Z',
+    type: 'SESSION',
+    location: {
+      videoType: [
+        {
+          link: 'https://meet.google.com/weekend-workshop',
+          id: 'weekend-workshop',
+          type: 'google-meet',
+        },
+      ],
+      type: ['videoType'],
+    },
+    label: 'Paid',
+  }
 ];

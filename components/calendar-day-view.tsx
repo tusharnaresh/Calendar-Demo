@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
@@ -73,21 +72,13 @@ export const CalendarDayView: React.FC = () => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton}>
-          <Ionicons name="menu" size={24} color="#111827" />
-        </TouchableOpacity>
-        
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerMonth}>
             {new Date(selectedDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.headerButton}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={20} color="#FFF" />
-          </View>
-        </TouchableOpacity>
+        {/* Profile button removed */}
       </View>
 
       {/* Calendar */}
@@ -141,17 +132,16 @@ export const CalendarDayView: React.FC = () => {
           <View style={styles.noEventsContainer}>
             <Ionicons name="calendar-outline" size={48} color="#D1D5DB" />
             <Text style={styles.noEventsText}>No events scheduled</Text>
+            {/* Add button removed; keep helpful copy generic */}
             <Text style={styles.noEventsSubtext}>
-              Tap the + button to add a new event
+              Use the controls to add a new event
             </Text>
           </View>
         )}
       </ScrollView>
 
       {/* FAB */}
-      <TouchableOpacity style={styles.fab}>
-        <Ionicons name="add" size={28} color="#FFF" />
-      </TouchableOpacity>
+      {/* FAB removed */}
     </SafeAreaView>
   );
 };

@@ -4,7 +4,6 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AppointmentLabel } from '../event-card-components/AppointmentLabel';
 import { ExternalSourceBadge } from '../event-card-components/ExternalSourceBadge';
-import { ServiceTypeBadge } from '../event-card-components/ServiceTypeBadge';
 import { SideBar } from '../event-card-components/SideBar';
 import { TimeStamp } from '../event-card-components/TimeStamp';
 import { VideoIcon } from '../event-card-components/VideoIcon';
@@ -50,13 +49,6 @@ export const LargeEvent: React.FC<LargeEventProps> = ({ event, onPress }) => {
 
         {/* Bottom Right: Service Badge, Label, External Icon */}
         <View style={styles.footer}>
-          <ServiceTypeBadge 
-            type={event.type}
-            service={event.service}
-            textColor={colors.text}
-            size="large"
-            cardState={cardState}
-          />
           
           <AppointmentLabel 
             label={event.label}
