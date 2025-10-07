@@ -1,4 +1,5 @@
 import { Event } from "@/data/mockEvents";
+import { mapEventColorToScheme } from "./eventColorMapper";
 
 export type ColorScheme = {
   dark: string; // Main dark color (for active state text/background)
@@ -67,13 +68,52 @@ export const colorSchemes: Record<ColorSchemeName, ColorScheme> =
     return acc;
   }, {} as Record<ColorSchemeName, ColorScheme>);
 
+/**
+ * Get the appropriate color scheme for an event
+ * 
+ * Color Priority Logic (matching web calendar):
+ * 1. eventColor from API (EVENT_COLOR_ONE through EVENT_COLOR_TEN)
+ *    - These are user-selected colors when creating/editing events
+ *    - Mapped to color schemes: ONE=internal-event, TWO=red, THREE=orange, etc.
+ * 
+ * 2. Manual colorScheme override (for testing/special cases)
+ *    - Direct specification of color scheme name
+ * 
+ * 3. Special event types:
+ *    - OUT_OF_OFFICE: type='OFF' or label='out of office' → grey
+ *    - EXTERNAL: isExternal=true → grey (Google, Microsoft calendars)
+ * 
+ * 4. Type-based colors (legacy logic):
+ *    - SESSION with service → dark-green
+ *    - APPOINTMENT with service → violet
+ * 
+ * 5. Default: internal-event (light blue, equivalent to EVENT_COLOR_ONE)
+ * 
+ * @param event - The event object
+ * @returns The ColorScheme object with all color variants
+ */
 export const getColorScheme = (event: Event): ColorScheme => {
-  // Allow manual override via event.colorScheme property
+  // Priority 1: Use eventColor from API if available (EVENT_COLOR_ONE, etc.)
+  if (event.eventColor) {
+    const mappedScheme = mapEventColorToScheme(event.eventColor);
+    return colorSchemes[mappedScheme];
+  }
+
+  // Priority 2: Allow manual override via event.colorScheme property
   if (event.colorScheme && colorSchemes[event.colorScheme]) {
     return colorSchemes[event.colorScheme];
   }
 
-  // Determine color based on event type and properties
+  // Priority 3: Special cases - external and out-of-office events
+  if (event.type === 'OFF' || event.label?.toLowerCase() === 'out of office') {
+    return colorSchemes["out-of-office"];
+  }
+  
+  if (event.isExternal) {
+    return colorSchemes["external-event"];
+  }
+
+  // Priority 4: Type-based colors for services and appointments
   if (event.type === "SESSION" && event.service && event.service.length > 0) {
     return colorSchemes["dark-green"]; // Services use dark-green
   }
@@ -85,12 +125,7 @@ export const getColorScheme = (event: Event): ColorScheme => {
     return colorSchemes["violet"]; // Appointments use violet
   }
 
-  // Check if external
-  if (event.isExternal) {
-    return colorSchemes["external-event"];
-  }
-
-  // Default to internal-event blue
+  // Default: Use internal-event blue (equivalent to EVENT_COLOR_ONE)
   return colorSchemes["internal-event"];
 };
 

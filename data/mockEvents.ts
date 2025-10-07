@@ -5,7 +5,7 @@ export interface Event {
   endTime: number;
   startDateTime: string;
   endDateTime: string;
-  type: 'EVENT' | 'SESSION' | 'APPOINTMENT';
+  type: 'EVENT' | 'SESSION' | 'APPOINTMENT' | 'OFF';
   location?: {
     videoType?: {
       link: string;
@@ -19,6 +19,7 @@ export interface Event {
   externalSource?: 'google' | 'microsoft';
   label?: string;
   cost?: number;
+  eventColor?: 'EVENT_COLOR_ONE' | 'EVENT_COLOR_TWO' | 'EVENT_COLOR_THREE' | 'EVENT_COLOR_FOUR' | 'EVENT_COLOR_FIVE' | 'EVENT_COLOR_SIX' | 'EVENT_COLOR_SEVEN' | 'EVENT_COLOR_EIGHT' | 'EVENT_COLOR_NINE' | 'EVENT_COLOR_TEN';
   colorScheme?: 
     | 'deep-blue' 
     | 'dark-green' 

@@ -13,7 +13,7 @@ interface EventCardProps {
   height?: number;
 }
 
-export const EventCard: React.FC<EventCardProps> = ({ event, onPress, size, height }) => {
+const EventCardComponent: React.FC<EventCardProps> = ({ event, onPress, size, height }) => {
   const cardSize = size || calculateCardSize(event);
 
   switch (cardSize) {
@@ -29,5 +29,15 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress, size, heig
       return <LargeEvent event={event} onPress={onPress} />;
   }
 };
+
+// Memoize to prevent unnecessary re-renders
+// Only re-render if event.id, size, or height changes
+export const EventCard = React.memo(EventCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.event.id === nextProps.event.id &&
+    prevProps.size === nextProps.size &&
+    prevProps.height === nextProps.height
+  );
+});
 
 export type { CardSize } from '@/utils/eventCardSizing';

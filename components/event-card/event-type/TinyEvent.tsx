@@ -12,7 +12,7 @@ interface TinyEventProps {
   onPress?: (event: Event) => void;
 }
 
-export const TinyEvent: React.FC<TinyEventProps> = ({ event, onPress }) => {
+const TinyEventComponent: React.FC<TinyEventProps> = ({ event, onPress }) => {
   const colors = getEventColors(event);
   const hasVideoLink = event.location?.videoType && event.location.videoType.length > 0;
 
@@ -56,6 +56,11 @@ export const TinyEvent: React.FC<TinyEventProps> = ({ event, onPress }) => {
     </TouchableOpacity>
   );
 };
+
+// Memoize to prevent unnecessary re-renders
+export const TinyEvent = React.memo(TinyEventComponent, (prevProps, nextProps) => {
+  return prevProps.event.id === nextProps.event.id;
+});
 
 const styles = StyleSheet.create({
   card: {

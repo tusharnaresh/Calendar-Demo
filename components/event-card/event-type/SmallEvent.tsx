@@ -13,7 +13,7 @@ interface SmallEventProps {
   onPress?: (event: Event) => void;
 }
 
-export const SmallEvent: React.FC<SmallEventProps> = ({ event, onPress }) => {
+const SmallEventComponent: React.FC<SmallEventProps> = ({ event, onPress }) => {
   const colors = getEventColors(event);
   const cardState = event.cardState || 'active';
   const hasVideoLink =
@@ -113,4 +113,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
   },
+});
+
+// Memoize to prevent unnecessary re-renders
+export const SmallEvent = React.memo(SmallEventComponent, (prevProps, nextProps) => {
+  return prevProps.event.id === nextProps.event.id;
 });

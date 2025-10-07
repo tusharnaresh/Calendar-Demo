@@ -13,7 +13,7 @@ interface LargeEventProps {
   onPress?: (event: Event) => void;
 }
 
-export const LargeEvent: React.FC<LargeEventProps> = ({ event, onPress }) => {
+const LargeEventComponent: React.FC<LargeEventProps> = ({ event, onPress }) => {
   const colors = getEventColors(event);
   const cardState = event.cardState || 'active';
   const hasVideoLink = event.location?.videoType && event.location.videoType.length > 0;
@@ -108,4 +108,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
+});
+
+// Memoize to prevent unnecessary re-renders
+export const LargeEvent = React.memo(LargeEventComponent, (prevProps, nextProps) => {
+  return prevProps.event.id === nextProps.event.id;
 });

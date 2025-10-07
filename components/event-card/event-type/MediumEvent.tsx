@@ -13,7 +13,7 @@ interface MediumEventProps {
   onPress?: (event: Event) => void;
 }
 
-export const MediumEvent: React.FC<MediumEventProps> = ({ event, onPress }) => {
+const MediumEventComponent: React.FC<MediumEventProps> = ({ event, onPress }) => {
   const colors = getEventColors(event);
   const cardState = event.cardState || 'active';
   const hasVideoLink = event.location?.videoType && event.location.videoType.length > 0;
@@ -107,4 +107,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
+});
+
+// Memoize to prevent unnecessary re-renders
+export const MediumEvent = React.memo(MediumEventComponent, (prevProps, nextProps) => {
+  return prevProps.event.id === nextProps.event.id;
 });
