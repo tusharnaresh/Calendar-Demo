@@ -37,6 +37,9 @@ export interface Event {
     | 'external-event'
     | 'out-of-office';
   cardState?: 'subtle' | 'medium' | 'active';
+  paymentStatus?: 'unpaid' | 'paid' | 'processing' | 'failed';
+  paymentIntentId?: string;
+  paymentAmount?: number; // Amount in dollars (e.g., 15.00)
 }
 
 // Mock events for October 3-10, 2025
@@ -114,6 +117,8 @@ export const mockEvents: Event[] = [
     },
     label: 'Paid',
     cost: 0,
+    paymentStatus: 'unpaid',
+    paymentAmount: 15.0,
   },
   {
     id: '5',
@@ -182,6 +187,8 @@ export const mockEvents: Event[] = [
     },
     label: 'No label',
     cost: 0,
+    paymentStatus: 'unpaid',
+    paymentAmount: 15.0,
   },
   {
     id: '8',
@@ -263,6 +270,8 @@ export const mockEvents: Event[] = [
       ],
       type: ['videoType'],
     },
+    paymentStatus: 'unpaid',
+    paymentAmount: 15.0,
   },
   {
     id: '12',
@@ -304,8 +313,10 @@ export const mockEvents: Event[] = [
     },
     label: 'Paid',
     cost: 50,
-  }
-  ,
+    paymentStatus: 'paid',
+    paymentAmount: 15.0,
+    paymentIntentId: 'pi_example_completed',
+  },
   {
     id: '14',
     title: 'Product Demo: New Feature',

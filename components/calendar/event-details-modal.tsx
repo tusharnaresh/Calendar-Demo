@@ -1,9 +1,18 @@
 import { Event } from '@/data/mockEvents'
+import {
+    confirmPayment,
+    createPaymentIntent,
+    getPaymentStatus,
+    savePaymentStatus,
+} from '@/services/payment-service'
 import { getEventColors } from '@/utils/eventColorSchemes'
 import { formatTime } from '@/utils/timeFormatters'
 import { Ionicons } from '@expo/vector-icons'
-import React from 'react'
+import { useStripe } from '@stripe/stripe-react-native'
+import React, { useEffect, useState } from 'react'
 import {
+    ActivityIndicator,
+    Alert,
     Modal,
     ScrollView,
     StyleSheet,
@@ -24,6 +33,116 @@ export const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
     event,
     onClose,
 }) => {
+    const { initPaymentSheet, presentPaymentSheet } = useStripe()
+    const [paymentStatus, setPaymentStatus] = useState<
+        Event['paymentStatus'] | null
+    >(null)
+    const [isProcessing, setIsProcessing] = useState(false)
+    const PAYMENT_AMOUNT = 15.0 // $15 constant amount
+
+    useEffect(() => {
+        if (event) {
+            loadPaymentStatus()
+        }
+    }, [event])
+
+    const loadPaymentStatus = async () => {
+        if (!event) return
+
+        const status = await getPaymentStatus(event.id)
+        setPaymentStatus(status?.status || event.paymentStatus || 'unpaid')
+    }
+
+    const handlePayment = async () => {
+        if (!event) return
+
+        setIsProcessing(true)
+
+        try {
+            // Step 1: Create payment intent
+            const { clientSecret, paymentIntentId } =
+                await createPaymentIntent(event.id, PAYMENT_AMOUNT)
+
+            // Step 2: Initialize payment sheet
+            const { error: initError } = await initPaymentSheet({
+                merchantDisplayName: 'Calendar Events',
+                paymentIntentClientSecret: clientSecret,
+                defaultBillingDetails: {
+                    name: 'Customer',
+                },
+            })
+
+            if (initError) {
+                Alert.alert('Error', initError.message)
+                setIsProcessing(false)
+                return
+            }
+
+            // Step 3: Present payment sheet
+            const { error: presentError } = await presentPaymentSheet()
+
+            if (presentError) {
+                if (presentError.code !== 'Canceled') {
+                    Alert.alert('Payment Failed', presentError.message)
+                }
+                setIsProcessing(false)
+                return
+            }
+
+            // Step 4: Confirm payment on backend
+            setPaymentStatus('processing')
+            await savePaymentStatus(event.id, 'processing', paymentIntentId)
+
+            const confirmation = await confirmPayment(paymentIntentId)
+
+            if (confirmation.status === 'succeeded') {
+                await savePaymentStatus(event.id, 'paid', paymentIntentId)
+                setPaymentStatus('paid')
+                Alert.alert(
+                    'Payment Successful',
+                    'Your payment has been processed successfully!'
+                )
+            } else {
+                await savePaymentStatus(event.id, 'failed', paymentIntentId)
+                setPaymentStatus('failed')
+                Alert.alert('Payment Failed', 'Payment was not completed.')
+            }
+        } catch (error: any) {
+            console.error('Payment error:', error)
+            Alert.alert('Error', error.message || 'Payment processing failed')
+            await savePaymentStatus(event.id, 'failed')
+            setPaymentStatus('failed')
+        } finally {
+            setIsProcessing(false)
+        }
+    }
+
+    const getPaymentStatusColor = () => {
+        switch (paymentStatus) {
+            case 'paid':
+                return '#10B981'
+            case 'processing':
+                return '#F59E0B'
+            case 'failed':
+                return '#EF4444'
+            default:
+                return '#6B7280'
+        }
+    }
+
+    const getPaymentStatusText = () => {
+        switch (paymentStatus) {
+            case 'paid':
+                return 'Paid'
+            case 'processing':
+                return 'Processing'
+            case 'failed':
+                return 'Failed'
+            default:
+                return 'Unpaid'
+        }
+    }
+
     if (!event) return null
 
     return (
@@ -235,6 +354,83 @@ export const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
                             </View>
                         </View>
                     </View>
+
+                    {/* Payment Section */}
+                    <View style={[styles.section, styles.paymentSection]}>
+                        <Text style={styles.paymentSectionTitle}>Payment</Text>
+
+                        <View style={styles.paymentInfo}>
+                            <View style={styles.paymentRow}>
+                                <Text style={styles.paymentLabel}>Amount</Text>
+                                <Text style={styles.paymentValue}>
+                                    ${PAYMENT_AMOUNT.toFixed(2)}
+                                </Text>
+                            </View>
+
+                            <View style={styles.paymentRow}>
+                                <Text style={styles.paymentLabel}>Status</Text>
+                                <View
+                                    style={[
+                                        styles.statusBadge,
+                                        {
+                                            backgroundColor:
+                                                getPaymentStatusColor() + '20',
+                                        },
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.statusText,
+                                            {
+                                                color: getPaymentStatusColor(),
+                                            },
+                                        ]}
+                                    >
+                                        {getPaymentStatusText()}
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        {paymentStatus !== 'paid' && (
+                            <TouchableOpacity
+                                style={[
+                                    styles.payButton,
+                                    isProcessing && styles.payButtonDisabled,
+                                ]}
+                                onPress={handlePayment}
+                                disabled={isProcessing}
+                            >
+                                {isProcessing ? (
+                                    <ActivityIndicator color="#FFF" />
+                                ) : (
+                                    <>
+                                        <Ionicons
+                                            name="card-outline"
+                                            size={20}
+                                            color="#FFF"
+                                        />
+                                        <Text style={styles.payButtonText}>
+                                            Pay ${PAYMENT_AMOUNT.toFixed(2)}
+                                        </Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
+                        )}
+
+                        {paymentStatus === 'paid' && (
+                            <View style={styles.paidContainer}>
+                                <Ionicons
+                                    name="checkmark-circle"
+                                    size={24}
+                                    color="#10B981"
+                                />
+                                <Text style={styles.paidText}>
+                                    Payment completed successfully
+                                </Text>
+                            </View>
+                        )}
+                    </View>
                 </ScrollView>
             </SafeAreaView>
         </Modal>
@@ -346,5 +542,80 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#111827',
         marginBottom: 4,
+    },
+    paymentSection: {
+        backgroundColor: '#F9FAFB',
+        marginHorizontal: -20,
+        paddingHorizontal: 20,
+        paddingVertical: 20,
+        borderBottomWidth: 0,
+    },
+    paymentSectionTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#111827',
+        marginBottom: 16,
+    },
+    paymentInfo: {
+        backgroundColor: '#FFF',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+    },
+    paymentRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    paymentLabel: {
+        fontSize: 14,
+        color: '#6B7280',
+        fontWeight: '500',
+    },
+    paymentValue: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#111827',
+    },
+    statusBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
+    },
+    statusText: {
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    payButton: {
+        backgroundColor: '#3B82F6',
+        borderRadius: 12,
+        paddingVertical: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    payButtonDisabled: {
+        backgroundColor: '#93C5FD',
+    },
+    payButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    paidContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        backgroundColor: '#D1FAE5',
+        borderRadius: 12,
+        gap: 8,
+    },
+    paidText: {
+        color: '#10B981',
+        fontSize: 16,
+        fontWeight: '600',
     },
 })
